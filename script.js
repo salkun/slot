@@ -4,9 +4,9 @@ const symbols = [
     "🍛", "🍝", "🍠", "🍢", "🍥", "🍘", "🍿", "🥟", "🥠", "🥡", "🥢", 
     "🥣", "🥤", "🍶", "🍵", "🍴", "🍽", "🥄", "🍩", "🍪", "🍫", "🍬", 
     "🍭", "🍮", "🍯", "🍰", "🎂", "🍨", "🍧", "🍡", "🍦"
-];
+  ];
   
-const values = {
+  const values = {
     "🍒": 1000,
     "🍋": 500,
     "🍉": 2000,
@@ -58,32 +58,38 @@ const values = {
     "🍧": 4400,
     "🍡": 4500,
     "🍦": 4600
-};
+  };
   
-let balance = 0;
-let spinning = false;
-const spinCost = 1000;
-let spinCount = 0;
-let jackpotSpinCount = 0;
-let autoSpinCount = 0;
+  let balance = 0;
+  let spinning = false;
+  let spinCost = 1000; // Updated to use a variable bet amount
+  let spinCount = 0;
+  let jackpotSpinCount = 0;
+  let autoSpinCount = 0;
   
-// Fungsi untuk memperbarui saldo
-function updateBalance(amount) {
+  // Fungsi untuk memperbarui saldo
+  function updateBalance(amount) {
     balance += amount;
     document.getElementById("balance").innerText = balance.toLocaleString();
-}
+  }
   
-// Fungsi untuk mendapatkan simbol acak
-function getRandomSymbol() {
+  // Fungsi untuk mendapatkan simbol acak
+  function getRandomSymbol() {
     return symbols[Math.floor(Math.random() * symbols.length)];
-}
+  }
   
-// Fungsi utama untuk melakukan spin
-function spin() {
+  // Fungsi untuk mengatur jumlah bet
+  function setBetAmount(amount) {
+    spinCost = amount;
+    alert(`atur jumlah bet menjadi Rp ${amount.toLocaleString()}`);
+  }
+  
+  // Fungsi utama untuk melakukan spin
+  function spin() {
     if (spinning) return;
     if (balance < spinCost) {
-        alert("Saldo tidak cukup untuk melakukan spin.");
-        return;
+      alert("Saldo tidak cukup untuk melakukan spin.");
+      return;
     }
     spinning = true;
     updateBalance(-spinCost);
@@ -98,107 +104,91 @@ function spin() {
     let spins = 3;
   
     function animateSpin(slot, delay) {
+      setTimeout(() => {
+        const interval = setInterval(() => {
+          slot.innerText = getRandomSymbol();
+        }, 100);
         setTimeout(() => {
-            const interval = setInterval(() => {
-                slot.innerText = getRandomSymbol();
-            }, 100);
-            setTimeout(() => {
-                clearInterval(interval);
-                slot.innerText = getRandomSymbol();
-                spins--;
-                if (spins === 0) {
-                    determineResult();
-                    spinning = false;
-                    if (autoSpinCount > 0) {
-                        autoSpinCount--;
-                        if (autoSpinCount > 0) {
-                            setTimeout(spin, 500);
-                        }
-                    }
-                }
-            }, 1000);
-        }, delay);
+          clearInterval(interval);
+          slot.innerText = getRandomSymbol();
+          spins--;
+          if (spins === 0) {
+            determineResult();
+            spinning = false;
+            if (autoSpinCount > 0) {
+              autoSpinCount--;
+              if (autoSpinCount > 0) {
+                setTimeout(spin, 500);
+              }
+            }
+          }
+        }, 1000);
+      }, delay);
     }
   
     function determineResult() {
-        let symbol1 = slot1.innerText;
-        let symbol2 = slot2.innerText;
-        let symbol3 = slot3.innerText;
+      let symbol1 = slot1.innerText;
+      let symbol2 = slot2.innerText;
+      let symbol3 = slot3.innerText;
   
-        let winAmount = 0;
-        const jackpotChance = 0.10; // Misalnya : 0.00 = 0% Jackpot / 0.05 = 5% jackpot / 0.10 = 10% jackpot
+      let winAmount = 0;
+      const jackpotChance = 0.10; // Misalnya : 0.00 = 0% Jackpot / 0.05 = 5% jackpot / 0.10 = 10% jackpot
   
-        if (Math.random() < jackpotChance) {
-            symbol1 = symbol2 = symbol3 = "🍑";
-            winAmount = values["🍑"] + 5000;
-            result.innerText = `Jackpot! Anda mendapatkan tambahan Rp 5.000!`;
-            jackpotSpinCount = 0;
-        } else {
-            if (symbol1 === symbol2 && symbol2 === symbol3) {
-                winAmount = values[symbol1] * 3;
-            } else if (
-                symbol1 === symbol2 ||
-                symbol2 === symbol3 ||
-                symbol1 === symbol3
-            ) {
-                if (symbol1 === symbol2) winAmount += values[symbol1] * 2;
-                if (symbol2 === symbol3) winAmount += values[symbol2] * 2;
-                if (symbol1 === symbol3) winAmount += values[symbol1] * 2;
-            }
+      if (Math.random() < jackpotChance) {
+        symbol1 = symbol2 = symbol3 = "🍑";
+        winAmount = values["🍑"] + 5000;
+        result.innerText = `Jackpot! Anda mendapatkan tambahan Rp 5.000!`;
+        jackpotSpinCount = 0;
+      } else {
+        if (symbol1 === symbol2 && symbol2 === symbol3) {
+          winAmount = values[symbol1] * 3;
+        } else if (
+          symbol1 === symbol2 ||
+          symbol2 === symbol3 ||
+          symbol1 === symbol3
+        ) {
+          if (symbol1 === symbol2) winAmount += values[symbol1] * 2;
+          if (symbol2 === symbol3) winAmount += values[symbol2] * 2;
+          if (symbol1 === symbol3) winAmount += values[symbol1] * 2;
         }
   
         if (winAmount > 0) {
-            result.innerText += ` Anda mendapatkan Rp ${winAmount.toLocaleString()}!`;
-            updateBalance(winAmount);
+          result.innerText = `Anda Menang Rp ${winAmount.toLocaleString()}`;
         } else {
-            result.innerText += " Coba Kembali";
+          result.innerText = "Coba Lagi!";
         }
-  
-        slot1.innerText = symbol1;
-        slot2.innerText = symbol2;
-        slot3.innerText = symbol3;
+      }
+      updateBalance(winAmount);
     }
   
     animateSpin(slot1, 0);
-    animateSpin(slot2, 500);
-    animateSpin(slot3, 1000);
-}
+    animateSpin(slot2, 200);
+    animateSpin(slot3, 400);
+  }
   
-// Fungsi untuk memulai spin otomatis
-function startAutoSpin(count) {
-    if (spinning) return;
-    if (balance < spinCost * count) {
-        alert("Saldo tidak cukup untuk melakukan spin otomatis.");
-        return;
+  // Fungsi untuk deposit
+  function deposit() {
+    const depositAmount = parseInt(prompt("Masukkan jumlah deposit:"));
+    if (!isNaN(depositAmount) && depositAmount > 0) {
+      updateBalance(depositAmount);
+    } else {
+      alert("Jumlah deposit tidak valid.");
     }
-    autoSpinCount = count;
+  }
+  
+  // Fungsi untuk withdraw
+  function withdraw() {
+    const withdrawAmount = parseInt(prompt("Masukkan jumlah withdraw:"));
+    if (!isNaN(withdrawAmount) && withdrawAmount > 0 && withdrawAmount <= balance) {
+      updateBalance(-withdrawAmount);
+    } else {
+      alert("Jumlah withdraw tidak valid atau saldo tidak mencukupi.");
+    }
+  }
+  
+  // Fungsi untuk memulai auto-spin
+  function startAutoSpin(spins) {
+    autoSpinCount = spins;
     spin();
-}
+  }
   
-// Fungsi untuk menambahkan saldo (deposit)
-function deposit() {
-    const amount = prompt("Masukkan jumlah deposit:");
-    const parsedAmount = parseInt(amount);
-    if (!isNaN(parsedAmount) && parsedAmount > 0) {
-        updateBalance(parsedAmount);
-        alert(
-            `Deposit berhasil! Saldo Anda sekarang Rp ${balance.toLocaleString()}`
-        );
-    } else {
-        alert("Jumlah tidak valid.");
-    }
-}
-  
-// Fungsi untuk menarik saldo (withdraw)
-function withdraw() {
-    const amount = prompt("Masukkan jumlah penarikan:");
-    const parsedAmount = parseInt(amount);
-    if (!isNaN(parsedAmount) && parsedAmount > 0 && parsedAmount <= balance) {
-        updateBalance(-parsedAmount);
-        alert(
-            `Penarikan berhasil! Saldo Anda sekarang Rp ${balance.toLocaleString()}`
-        );
-    } else {
-        alert("Jumlah tidak valid atau saldo tidak mencukupi.");
-    }
-}
